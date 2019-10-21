@@ -13,11 +13,13 @@ type App struct {
 	Router *mux.Router
 }
 
+// shorten require
 type shortenReq struct {
 	URL string `json:"url" validate:"nonzero"`
 	ExpirationInMinutes int64 `json:"expiration_in_minutes" validate:"min=0"`
 }
 
+// short link response
 type shortLinkResp struct {
 	ShortLink string `json:"shortlink"`
 }
@@ -35,12 +37,14 @@ func (app *App) Initialize() {
 	app.initializeRoutes()
 }
 
+// App Init Routes
 func(app *App) initializeRoutes() {
 	app.Router.HandleFunc("/api/shorten", app.createShortLink).Methods("POST")
 	app.Router.HandleFunc("/api/info", app.getShortLinkInfo).Methods("GET")
 	app.Router.HandleFunc("/{shorten:[a-zA-Z0-9]{1,11}}", app.redirect).Methods("GET")
 }
 
+// generate a short link
 func(app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	var req shortenReq
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
@@ -57,6 +61,7 @@ func(app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(req)
 }
 
+// get short link information
 func(app *App) getShortLinkInfo(w http.ResponseWriter, r *http.Request) {
 	vals := r.URL.Query()
 	s := vals.Get("shortlink")
@@ -64,6 +69,7 @@ func(app *App) getShortLinkInfo(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(s)
 }
 
+// temp redirect
 func(app *App) redirect(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fmt.Printf("%s\n", vars["shortlink"])
