@@ -3,11 +3,11 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	log "github.com/cihub/seelog"
 	"github.com/gorilla/mux"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 )
-import log "github.com/cihub/seelog"
 
 type App struct {
 	Router *mux.Router
@@ -15,8 +15,8 @@ type App struct {
 
 // shorten require
 type shortenReq struct {
-	URL string `json:"url" validate:"nonzero"`
-	ExpirationInMinutes int64 `json:"expiration_in_minutes" validate:"min=0"`
+	URL                 string `json:"url" validate:"required"`
+	ExpirationInMinutes int64  `json:"expiration_in_minutes" validate:"min=0"`
 }
 
 // short link response
@@ -28,8 +28,7 @@ type shortLinkResp struct {
 func (app *App) Initialize() {
 	logger, err := log.LoggerFromConfigAsFile("./config/seelog.xml")
 	if err != nil {
-		log.Critical("err parsing config log file", err)
-		return
+		panic(err)
 	}
 	log.ReplaceLogger(logger)
 	defer log.Flush()
@@ -38,23 +37,26 @@ func (app *App) Initialize() {
 }
 
 // App Init Routes
-func(app *App) initializeRoutes() {
+func (app *App) initializeRoutes() {
 	app.Router.HandleFunc("/api/shorten", app.createShortLink).Methods("POST")
 	app.Router.HandleFunc("/api/info", app.getShortLinkInfo).Methods("GET")
-	app.Router.HandleFunc("/{shorten:[a-zA-Z0-9]{1,11}}", app.redirect).Methods("GET")
+	app.Router.HandleFunc("/{shortlink:[a-zA-Z0-9]{1,11}}", app.redirect).Methods("GET")
 }
 
 // generate a short link
-func(app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
+func (app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	var req shortenReq
+	fmt.Println(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-		log.Error("Json decoder failed.")
+		reponseWithError(w, StatusError{http.StatusBadRequest,
+			fmt.Errorf("json r.Body failed %v", r.Body)})
 		return
 	}
 
 	defer r.Body.Close()
-
-	if err := validator.New().Struct(req); err != nil {
+	if err := validator.New().Struct(&req); err != nil {
+		reponseWithError(w, StatusError{http.StatusBadRequest,
+			fmt.Errorf("validate param failed %v", req)})
 		return
 	}
 
@@ -62,7 +64,7 @@ func(app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 }
 
 // get short link information
-func(app *App) getShortLinkInfo(w http.ResponseWriter, r *http.Request) {
+func (app *App) getShortLinkInfo(w http.ResponseWriter, r *http.Request) {
 	vals := r.URL.Query()
 	s := vals.Get("shortlink")
 
@@ -70,7 +72,7 @@ func(app *App) getShortLinkInfo(w http.ResponseWriter, r *http.Request) {
 }
 
 // temp redirect
-func(app *App) redirect(w http.ResponseWriter, r *http.Request) {
+func (app *App) redirect(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fmt.Printf("%s\n", vars["shortlink"])
 }
@@ -79,4 +81,21 @@ func (app *App) Run(addr string) {
 	if err := http.ListenAndServe(addr, app.Router); err != nil {
 		panic("Listen faild.")
 	}
+}
+
+func reponseWithError(w http.ResponseWriter, statusError error) {
+	switch statusError.(type) {
+	case Error:
+		_ = log.Errorf("http-%d-%s\n", statusError.(Error).Status(), statusError)
+		reponseWithJson(w, statusError.(Error).Status(), statusError.(Error).Error())
+	default:
+		reponseWithJson(w, statusError.(Error).Status(), http.StatusText(statusError.(Error).Status()))
+	}
+}
+
+func reponseWithJson(w http.ResponseWriter, code int, payload interface{}) {
+	w.Header().Set("Content-Type", "application/json")
+	jStr, _ := json.Marshal(payload)
+	w.WriteHeader(code)
+	w.Write(jStr)
 }

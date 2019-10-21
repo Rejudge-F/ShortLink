@@ -1,0 +1,4 @@
+2019-10-21/22:36:20 [ERR] http-%d-%s
+400 validate param failed {www.example.com -1}
+2019-10-21/22:36:39 [ERR] http-400-validate param failed {www.example.com -1}
+
