@@ -15,18 +15,18 @@ type App struct {
 	Middlewares *Middleware
 }
 
-// shorten require
+// shortenReq shorten require
 type shortenReq struct {
 	URL                 string `json:"url" validate:"required"`
 	ExpirationInMinutes int64  `json:"expiration_in_minutes" validate:"min=0"`
 }
 
-// short link response
+// shortLinkResp short link response
 type shortLinkResp struct {
 	ShortLink string `json:"shortlink"`
 }
 
-// App Init
+// Initialize App Init
 func (app *App) Initialize() {
 	logger, err := log.LoggerFromConfigAsFile("./config/seelog.xml")
 	if err != nil {
@@ -39,7 +39,7 @@ func (app *App) Initialize() {
 	app.initializeRoutes()
 }
 
-// App Init Routes
+// initializeRoutes App Init Routes
 func (app *App) initializeRoutes() {
 	m := alice.New(app.Middlewares.LoggingHandler, app.Middlewares.RecoverHandler)
 	app.Router.Handle("/api/shorten", m.ThenFunc(app.createShortLink)).Methods("POST")
@@ -47,7 +47,7 @@ func (app *App) initializeRoutes() {
 	app.Router.Handle("/{shortlink:[a-zA-Z0-9]{1,11}", m.ThenFunc(app.redirect)).Methods("GET")
 }
 
-// generate a short link
+// createShortLink generate a short link
 func (app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	var req shortenReq
 	fmt.Println(r.Body)
@@ -67,7 +67,7 @@ func (app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(req)
 }
 
-// get short link information
+// getShortLinkInfo get short link information
 func (app *App) getShortLinkInfo(w http.ResponseWriter, r *http.Request) {
 	vals := r.URL.Query()
 	s := vals.Get("shortlink")
@@ -75,18 +75,20 @@ func (app *App) getShortLinkInfo(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(s)
 }
 
-// temp redirect
+// redirect temp redirect
 func (app *App) redirect(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
 	fmt.Printf("%s\n", vars["shortlink"])
 }
 
+// Run app run interface
 func (app *App) Run(addr string) {
 	if err := http.ListenAndServe(addr, app.Router); err != nil {
 		panic("Listen faild.")
 	}
 }
 
+// reponseWithError analysis the error and log it
 func reponseWithError(w http.ResponseWriter, statusError error) {
 	switch statusError.(type) {
 	case Error:
@@ -97,6 +99,7 @@ func reponseWithError(w http.ResponseWriter, statusError error) {
 	}
 }
 
+// reponseWithJson response client with Json
 func reponseWithJson(w http.ResponseWriter, code int, payload interface{}) {
 	w.Header().Set("Content-Type", "application/json")
 	jStr, _ := json.Marshal(payload)
