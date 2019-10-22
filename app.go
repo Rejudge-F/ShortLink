@@ -5,12 +5,14 @@ import (
 	"fmt"
 	log "github.com/cihub/seelog"
 	"github.com/gorilla/mux"
+	"github.com/justinas/alice"
 	"gopkg.in/go-playground/validator.v9"
 	"net/http"
 )
 
 type App struct {
-	Router *mux.Router
+	Router      *mux.Router
+	Middlewares *Middleware
 }
 
 // shorten require
@@ -33,14 +35,16 @@ func (app *App) Initialize() {
 	log.ReplaceLogger(logger)
 	defer log.Flush()
 	app.Router = mux.NewRouter()
+	app.Middlewares = &Middleware{}
 	app.initializeRoutes()
 }
 
 // App Init Routes
 func (app *App) initializeRoutes() {
-	app.Router.HandleFunc("/api/shorten", app.createShortLink).Methods("POST")
-	app.Router.HandleFunc("/api/info", app.getShortLinkInfo).Methods("GET")
-	app.Router.HandleFunc("/{shortlink:[a-zA-Z0-9]{1,11}}", app.redirect).Methods("GET")
+	m := alice.New(app.Middlewares.LoggingHandler, app.Middlewares.RecoverHandler)
+	app.Router.Handle("/api/shorten", m.ThenFunc(app.createShortLink)).Methods("POST")
+	app.Router.Handle("/api/info", m.ThenFunc(app.getShortLinkInfo)).Methods("GET")
+	app.Router.Handle("/{shortlink:[a-zA-Z0-9]{1,11}", m.ThenFunc(app.redirect)).Methods("GET")
 }
 
 // generate a short link
