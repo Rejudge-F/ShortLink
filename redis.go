@@ -7,7 +7,6 @@ import (
 	"fmt"
 	"github.com/catinello/base62"
 	"github.com/go-redis/redis"
-	"golang.org/x/net/html/atom"
 	"time"
 )
 
