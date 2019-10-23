@@ -3,9 +3,11 @@ package main
 import (
 	"crypto/sha1"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"github.com/catinello/base62"
 	"github.com/go-redis/redis"
+	"golang.org/x/net/html/atom"
 	"time"
 )
 
@@ -112,9 +114,23 @@ func (cli *RedisClient) Shorten(url string, exp int64) (string, error) {
 }
 
 func (cli *RedisClient) ShortlinkInfo(eid string) (interface{}, error) {
-	return nil, nil
+	jsonStr, err := cli.Cli.Get(fmt.Sprintf(ShortlinkDetailKey, eid)).Result()
+	if err == redis.Nil {
+		return nil, StatusError{Code: 404, Err: errors.New("unknown short url")}
+	} else if err != nil {
+		return nil, err
+	} else {
+		return jsonStr, nil
+	}
 }
 
 func (cli *RedisClient) UnShorten(eid string) (string, error) {
-	return "", nil
+	jsonStr, err := cli.Cli.Get(fmt.Sprintf(ShortlinkKey, eid)).Result()
+	if err == redis.Nil {
+		return "", StatusError{Code: 404, Err: err}
+	} else if err != nil {
+		return "", err
+	} else {
+		return jsonStr, nil
+	}
 }
