@@ -13,6 +13,7 @@ import (
 type App struct {
 	Router      *mux.Router
 	Middlewares *Middleware
+	Env         *Env
 }
 
 // shortenReq shorten require
@@ -27,7 +28,7 @@ type shortLinkResp struct {
 }
 
 // Initialize App Init
-func (app *App) Initialize() {
+func (app *App) Initialize(env *Env) {
 	logger, err := log.LoggerFromConfigAsFile("./config/seelog.xml")
 	if err != nil {
 		panic(err)
@@ -36,6 +37,7 @@ func (app *App) Initialize() {
 	defer log.Flush()
 	app.Router = mux.NewRouter()
 	app.Middlewares = &Middleware{}
+	app.Env = env
 	app.initializeRoutes()
 }
 
