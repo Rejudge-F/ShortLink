@@ -13,7 +13,7 @@ type Env struct {
 func getEnv() *Env {
 	addr := os.Getenv("APP_REDIS_ADDR")
 	if addr == "" {
-		addr = "localhost"
+		addr = "localhost:6379"
 	}
 
 	pass := os.Getenv("APP_REDIS_PASSWD")
