@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/astaxie/beego/logs"
+	log "github.com/cihub/seelog"
 	"os"
 	"strconv"
 )
@@ -27,7 +27,7 @@ func getEnv() *Env {
 	}
 	index, err := strconv.Atoi(db)
 	if err != nil {
-		logs.Debug("%s not db index", db)
+		log.Debug("%s not db index", db)
 		panic(err)
 	}
 
