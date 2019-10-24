@@ -5,6 +5,21 @@
 [![github](https://badgen.net/badge/build/passing/green)](#)
 [![github](https://badgen.net/badge/license/GUN/green)](https://github.com/Rejudge-F/ShortLink/blob/master/LICENSE)
 
+Table of Contents
+=================
+
+   * [短网址服务](#短网址服务)
+   * [项目目的](#项目目的)
+   * [项目架构](#项目架构)
+   * [项目设计](#项目设计)
+      * [接口设计](#接口设计)
+      * [httpServer设计](#httpserver设计)
+      * [中间件设计](#中间件设计)
+      * [配置设计](#配置设计)
+         * [日志配置](#日志配置)
+         * [Redis信息配置](#redis信息配置)
+   * [如何使用](#如何使用)
+
 # 项目目的
 我们在类似空间微博的地方会遇到字符限制这种问题，但是我们又需要贴一个网址的时候，这时候需要用到短网址服务，短网址的意思就是将一个长网址映射为一个短网址，以此来达到缩短字数的目的
 
