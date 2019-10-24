@@ -1,7 +1,7 @@
 # 短网址服务
 使用golang开发的短网址服务
 
-[![github](https://badgen.net/badge/golang/1.12/green)](https://github.com/golang/go)
+[![github](https://badgen.net/badge/golang/1.13/green)](https://github.com/golang/go)
 [![github](https://badgen.net/badge/build/passing/green)](#)
 [![github](https://badgen.net/badge/license/GUN/green)](https://github.com/Rejudge-F/ShortLink/blob/master/LICENSE)
 
