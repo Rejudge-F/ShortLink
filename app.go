@@ -12,7 +12,7 @@ import (
 
 type App struct {
 	Router      *mux.Router
-	Middlewares *Middleware
+	MiddleWares *Middleware
 	Config      *Env
 }
 
@@ -36,14 +36,14 @@ func (app *App) Initialize(env *Env) {
 	log.ReplaceLogger(logger)
 	defer log.Flush()
 	app.Router = mux.NewRouter()
-	app.Middlewares = &Middleware{}
+	app.MiddleWares = &Middleware{}
 	app.Config = env
 	app.initializeRoutes()
 }
 
 // initializeRoutes App Init Routes
 func (app *App) initializeRoutes() {
-	m := alice.New(app.Middlewares.LoggingHandler, app.Middlewares.RecoverHandler)
+	m := alice.New(app.MiddleWares.LoggingHandler, app.MiddleWares.RecoverHandler)
 	app.Router.Handle("/api/shorten", m.ThenFunc(app.createShortLink)).Methods("POST")
 	app.Router.Handle("/api/info", m.ThenFunc(app.getShortLinkInfo)).Methods("GET")
 	app.Router.Handle("/{shortlink:[a-zA-Z0-9]{1,11}}", m.ThenFunc(app.redirect)).Methods("GET")
