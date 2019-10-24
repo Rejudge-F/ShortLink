@@ -48,9 +48,11 @@ func NewRedisCli(addr string, pass string, db int) *RedisClient {
 }
 
 func (cli *RedisClient) Shorten(url string, exp int64) (string, error) {
-	hashUrl := fmt.Sprintf("%s", sha1.Sum([]byte(url)))
+	shaUtil := sha1.New()
+	shaUtil.Write([]byte(url))
+	hashUrl := fmt.Sprintf("%x", shaUtil.Sum(nil))
 
-	d, err := cli.Cli.Get(hashUrl).Result()
+	d, err := cli.Cli.Get(fmt.Sprintf(URLHashKey, hashUrl)).Result()
 
 	if err == redis.Nil {
 		// url not exist, nothing to do
