@@ -1,0 +1,29 @@
+# github.com/catinello/base62 v0.0.0-20160325105823-e0daaeb631c9
+github.com/catinello/base62
+# github.com/cihub/seelog v0.0.0-20170130134532-f561c5e57575
+github.com/cihub/seelog
+github.com/cihub/seelog/archive
+github.com/cihub/seelog/archive/gzip
+github.com/cihub/seelog/archive/tar
+github.com/cihub/seelog/archive/zip
+# github.com/go-playground/locales v0.13.0
+github.com/go-playground/locales
+github.com/go-playground/locales/currency
+# github.com/go-playground/universal-translator v0.16.0
+github.com/go-playground/universal-translator
+# github.com/go-redis/redis v6.15.6+incompatible
+github.com/go-redis/redis
+github.com/go-redis/redis/internal
+github.com/go-redis/redis/internal/consistenthash
+github.com/go-redis/redis/internal/hashtag
+github.com/go-redis/redis/internal/pool
+github.com/go-redis/redis/internal/proto
+github.com/go-redis/redis/internal/util
+# github.com/gorilla/mux v1.7.3
+github.com/gorilla/mux
+# github.com/justinas/alice v0.0.0-20171023064455-03f45bd4b7da
+github.com/justinas/alice
+# github.com/leodido/go-urn v1.2.0
+github.com/leodido/go-urn
+# gopkg.in/go-playground/validator.v9 v9.30.0
+gopkg.in/go-playground/validator.v9
