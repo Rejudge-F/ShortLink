@@ -60,13 +60,20 @@ func (app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	}
 
 	defer r.Body.Close()
+
 	if err := validator.New().Struct(&req); err != nil {
 		reponseWithError(w, StatusError{http.StatusBadRequest,
 			fmt.Errorf("validate param failed %v", req)})
 		return
 	}
 
-	fmt.Println(req)
+	shortLink, err := app.Env.storage.Shorten(req.URL, req.ExpirationInMinutes)
+	if err != nil {
+		reponseWithError(w, StatusError{http.StatusInternalServerError, fmt.Errorf("shorten failed %v", req)})
+		return
+	}
+
+	reponseWithJson(w, 200, shortLink)
 }
 
 // getShortLinkInfo get short link information
