@@ -126,3 +126,23 @@ func getEnv() *Env {
 	return &Env{storage: cli}
 }
 ```
+
+# 如何使用
+通过三个api来实现
+- /api/shorten：通过post一个json
+{
+	"url":"www.baidu.com",
+	"expiration_in_minutes":10
+}
+来实现生成一个短网址
+
+- /api/info?shortlink={短网址}：用来获取短网址的长网址信息，主要包含
+```go
+// ShortlinkInfo short_link info
+type ShortlinkInfo struct {
+	URL                 string `json:"url"`
+	CreatedAt           string `json:"created_at"`
+	ExpirationInMinutes int64  `json:"expiration_in_minutes"`
+}
+```
+- /{短网址}：用来通过短网址跳转到对应的长网址
