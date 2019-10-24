@@ -3,7 +3,7 @@
         <filter levels="info,critical,error">
             <console />
         </filter>
-        <filter levels="debug, error, info">
+        <filter levels="debug, error">
             <file path="./log/App.log" />
         </filter>
     </outputs>
