@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/catinello/base62"
 	"github.com/go-redis/redis"
+	"strings"
 	"time"
 )
 
@@ -48,6 +49,9 @@ func NewRedisCli(addr string, pass string, db int) *RedisClient {
 }
 
 func (cli *RedisClient) Shorten(url string, exp int64) (string, error) {
+	if strings.Index(url, "http") != 0 {
+		url = "https://" + url
+	}
 	shaUtil := sha1.New()
 	shaUtil.Write([]byte(url))
 	hashUrl := fmt.Sprintf("%x", shaUtil.Sum(nil))
@@ -128,7 +132,7 @@ func (cli *RedisClient) ShortlinkInfo(eid string) (interface{}, error) {
 func (cli *RedisClient) UnShorten(eid string) (string, error) {
 	jsonStr, err := cli.Cli.Get(fmt.Sprintf(ShortlinkKey, eid)).Result()
 	if err == redis.Nil {
-		return "", StatusError{Code: 404, Err: err}
+		return "", StatusError{Code: 404, Err: fmt.Errorf("unknown this short link")}
 	} else if err != nil {
 		return "", err
 	} else {
