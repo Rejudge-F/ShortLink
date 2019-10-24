@@ -13,7 +13,7 @@ import (
 type App struct {
 	Router      *mux.Router
 	Middlewares *Middleware
-	Env         *Env
+	Config      *Env
 }
 
 // shortenReq shorten require
@@ -37,7 +37,7 @@ func (app *App) Initialize(env *Env) {
 	defer log.Flush()
 	app.Router = mux.NewRouter()
 	app.Middlewares = &Middleware{}
-	app.Env = env
+	app.Config = env
 	app.initializeRoutes()
 }
 
@@ -46,13 +46,12 @@ func (app *App) initializeRoutes() {
 	m := alice.New(app.Middlewares.LoggingHandler, app.Middlewares.RecoverHandler)
 	app.Router.Handle("/api/shorten", m.ThenFunc(app.createShortLink)).Methods("POST")
 	app.Router.Handle("/api/info", m.ThenFunc(app.getShortLinkInfo)).Methods("GET")
-	app.Router.Handle("/{shortlink:[a-zA-Z0-9]{1,11}", m.ThenFunc(app.redirect)).Methods("GET")
+	app.Router.Handle("/{shortlink:[a-zA-Z0-9]{1,11}}", m.ThenFunc(app.redirect)).Methods("GET")
 }
 
 // createShortLink generate a short link
 func (app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 	var req shortenReq
-	fmt.Println(r.Body)
 	if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
 		reponseWithError(w, StatusError{http.StatusBadRequest,
 			fmt.Errorf("json r.Body failed %v", r.Body)})
@@ -67,27 +66,39 @@ func (app *App) createShortLink(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	shortLink, err := app.Env.storage.Shorten(req.URL, req.ExpirationInMinutes)
+	shortLink, err := app.Config.storage.Shorten(req.URL, req.ExpirationInMinutes)
 	if err != nil {
 		reponseWithError(w, StatusError{http.StatusInternalServerError, fmt.Errorf("shorten failed %v", req)})
 		return
 	}
 
-	reponseWithJson(w, 200, shortLink)
+	reponseWithJson(w, http.StatusOK, shortLink)
 }
 
 // getShortLinkInfo get short link information
 func (app *App) getShortLinkInfo(w http.ResponseWriter, r *http.Request) {
 	vals := r.URL.Query()
-	s := vals.Get("shortlink")
+	shortLink := vals.Get("shortlink")
 
-	fmt.Println(s)
+	info, err := app.Config.storage.ShortlinkInfo(shortLink)
+	if err != nil {
+		reponseWithError(w, err)
+		return
+	}
+
+	reponseWithJson(w, http.StatusOK, info)
 }
 
 // redirect temp redirect
 func (app *App) redirect(w http.ResponseWriter, r *http.Request) {
 	vars := mux.Vars(r)
-	fmt.Printf("%s\n", vars["shortlink"])
+
+	url, err := app.Config.storage.UnShorten(vars["shortlink"])
+	if err != nil {
+		reponseWithError(w, err)
+		return
+	}
+	http.Redirect(w, r, url, http.StatusTemporaryRedirect)
 }
 
 // Run app run interface
